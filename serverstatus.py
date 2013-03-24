@@ -22,7 +22,7 @@ class SubProcess(object):
         return output_list
 
 def cpu_process_load_mem_stat():
-    ''' data of cpustat,processstat,loadstat,memstat from top command
+    """ data of cpustat,processstat,loadstat,memstat from top command
     return:
 data_keys = {
         'cpustat': {}
@@ -30,9 +30,9 @@ data_keys = {
         'loadstat': {}
         'memstat': {}
         }
-    '''
+    """
 
-    cmd = "top -bi -n 2 -d 0.02"
+    cmd = "/usr/bin/top -bi -n 2 -d 0.02"
     arg = "\n\n\n"
     data_keys = {}
     output = SubProcess(cmd, arg)
@@ -86,20 +86,20 @@ data_keys = {
     #print {'cpustat': cpu_dict,'processstat': process_dict,'loadstat': load_dict,'memstat': mem_dict}
 
 def disk_stat():
-    ''' data of diskstat from df command
+    """ data of diskstat from df command
     return:
 data_keys = {
         'diskstat': {}
         }
-    '''
+    """
 
-    cmd = "df -h"
-    cmd_inode = "df -hi"
+    cmd = "/bin/df -h"
+    cmd_inode = "/bin/df -hi"
     arg = "\n"
     data_keys = {}
     disk_dict = {}
     output = SubProcess(cmd, arg)
-    output_list = output.popen()[2:-1]
+    output_list = output.popen()[1:-1]
 
     for line in output_list:
         con = line.split()
@@ -114,7 +114,7 @@ data_keys = {
 
     #inode
     output_inode = SubProcess(cmd_inode, arg)
-    output_list_inode = output_inode.popen()[2:-1]
+    output_list_inode = output_inode.popen()[1:-1]
 
     for line_inode in output_list_inode:
         con_inode = line_inode.split()
@@ -127,12 +127,12 @@ data_keys = {
     return data_keys
 
 def net_stat():
-    ''' data of netstat from /proc/net/dev
+    """ data of netstat from /proc/net/dev
     return:
 data_keys = {
         'netstat': {}
         }
-    '''
+    """
 
     data_keys = {}
     net_disk = {}
@@ -164,14 +164,14 @@ data_keys = {
     return data_keys
 
 def io_stat():
-    ''' data of iostat from iostat command
+    """ data of iostat from iostat command
     return:
 data_keys = {
         'iostat': {}
         }
-    '''
+    """
 
-    cmd = "iostat -x"
+    cmd = "/usr/bin/iostat -x"
     arg = "\n\n"
     data_keys = {}
     io_dict = {}
@@ -201,8 +201,8 @@ data_keys = {
     return data_keys
 
 def server_stat():
-    '''server status
-    '''
+    """server status
+    """
 
     serverstat = {}
     serverstat = cpu_process_load_mem_stat()
