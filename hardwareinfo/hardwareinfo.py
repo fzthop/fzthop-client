@@ -15,15 +15,15 @@ class Dmidecode():
         dmidecodeCmd = "/usr/sbin/dmidecode"
         #if os.path.isfile(dmidecodeCmd):
         subp   = subprocess.Popen(dmidecodeCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-        dmidecodeInfo= sub.stdout.read()
+        dmidecodeInfo= subp.stdout.read()
         if subp.poll() == 0:
             dmidecodeInfo = dmidecodeInfo.split("\n\n")
         else:
             dmidecodeInfo = []
-        #test--code
-        #dmidecodeInfo = open(r"./dmidecode.info").read()
-        #dmidecodeInfo = dmidecodeInfo.split("\n\n")
-        #test--code
+#        #test--code
+#        dmidecodeInfo = open(r"dmidecode.info").read()
+#        dmidecodeInfo = dmidecodeInfo.split("\n\n")
+#        #test--code
         self.dmidecodeInfo = dmidecodeInfo
 
     def blosInfo(self):
@@ -71,7 +71,7 @@ class Dmidecode():
             return  result
         else:
             return None
-    def cache(self):
+    def cacheInfo(self):
         dmidecodeInfo = self.dmidecodeInfo
         findAll = re.compile(r"""type:([^\n]+)\n        #内存类型
                                  .*capacity:([^\n]+)\n   #最大支持内存
@@ -92,22 +92,22 @@ class Dmidecode():
             return  result
         else:
             return None
-    def cpu(self):
+    def cpuInfo(self):
         dmidecodeInfo = self.dmidecodeInfo
-        findAll = re.compile(r"""designation:([^\n]+)\n          #CPU插槽位置
-                                  .*id:([^\n]+)\n                #CPU ID
-                                  .*version:([^\n]+)\n           #CPU型号
-                                  .*voltage:([^\n]+)\n           #CPU电压
-                                  .*clock:([^\n]+)\n             #CPU外频
-                                  .*max\s+speed:([^\n]+)\n       #CPU最大主频
-                                  .*current\s+speed:([^\n]+)\n   #CPU当前主频
-                                  .*upgrade:([^\n]+)\n           #CPU接口类型
-                                  .*core\s+count:([^\n]+)\n      #CPU核心个数
-                                  .*core\s+enabled:([^\n]+)\n    #CPU核心启用个数
-                                  .*thread\s+count:([^\n]+)\n    #CPU线程数
+        findAll = re.compile(r"""designation:([^\n]+)\n             #CPU插槽位置
+                                  .*id:([^\n]+)\n                    #CPU ID
+                                  .*version:([^\n]+)\n               #CPU型号
+                                  .*voltage:([^\n]+)\n               #CPU电压
+                                  .*clock:([^\n]+)\n                 #CPU外频
+                                  .*max\s+speed:([^\n]+)\n           #CPU最大主频
+                                  .*current\s+speed:([^\n]+)\n       #CPU当前主频
+                                  .*upgrade:([^\n]+)\n               #CPU接口类型
+                                  (?=.*core\s+count:([^\n]+)\n)?     #CPU核心个数
+                                  (?=.*core\s+enabled:([^\n]+)\n)?   #CPU核心启用个数
+                                  (?=.*thread\s+count:([^\n]+)\n)?   #CPU线程数
                                  """,re.I|re.X|re.S)
         result = {}
-        project = ['designation','id','version','voltage','clock','maxSpeed'
+        project = ['designation','id','version','voltage','clock','maxSpeed',
                  'currentSpeed','upgrade','coreCount','coreEnabled','threadCount']
         for ls in dmidecodeInfo:
             if ls.find("Processor Information") > 0:
@@ -127,20 +127,20 @@ class Dmidecode():
             return  result
         else:
             return None
-    def memory(self):
+    def memoryInfo(self):
         dmidecodeInfo = self.dmidecodeInfo
-        findAll = re.compile(r"""size:([^\n]+)\n              #内存大小
+        findAll = re.compile(r"""size:([^\n]+)\n                 #内存大小
                                   .*\tlocator:([^\n]+)\n         #内存插槽位置
-                                  .*type:([^\n]+)\n            #内存类型
-                                  .*speed:([^\n]+)\n           #内存时钟频率
-                                  .*manufacturer:([^\n]+)\n    #制造商编码
-                                  .*serial\s+number:([^\n]+)\n #序列号
-                                  .*asset\s+tag:([^\n]+)\n     #资产标签
-                                  .*part\s+number:([^\n]+)\n   #物料编码
-                                  .*rank:([^\n]+)\n?            #内存芯片镶嵌类型
+                                  .*type:([^\n]+)\n              #内存类型
+                                  .*speed:([^\n]+)\n             #内存时钟频率
+                                  .*manufacturer:([^\n]+)\n      #制造商编码
+                                  .*serial\s+number:([^\n]+)\n   #序列号
+                                  .*asset\s+tag:([^\n]+)\n       #资产标签
+                                  .*part\s+number:([^\n]+)\n?    #物料编码
+                                  (?:.*rank:([^\n]+)\n?)?        #内存芯片镶嵌类型
                                  """,re.I|re.X|re.S)
         result = {}
-        project = ['size','locator','type','speed','manufacturer','serialNumber'
+        project = ['size','locator','type','speed','manufacturer','serialNumber',
                      'assetTag','partNumber','rank']
         for ls in dmidecodeInfo:
             if ls.find("Memory Device") > 0:
@@ -161,11 +161,59 @@ class Dmidecode():
             return  result
         else:
             return None
+class Kudzu():
+    """
+    获取网卡信息
+    """
+    def __init__(self):
+        kudzuCmd  = "/sbin/kudzu --probe --class=network"
+        subp      = subprocess.Popen(kudzuCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+        kudzuInfo = subp.stdout.read()
+        if subp.poll() == 0:
+            kudzuInfo = kudzuInfo.split("-")
+        else:
+            kudzuInfo = []
+#        #test--code
+#        kudzuInfo = open(r"netwok.info").read()
+#        kudzuInfo = kudzuInfo.split("-")
+#        #test--code
+        self.kudzuInfo = kudzuInfo
 
+    def networkCard(self):
+        kuzuInfo = self.kudzuInfo
+        findAll = re.compile(r"""device:([^\n]+)\n
+                                  .*driver:([^\n]+)\n
+                                  .*desc:([^\n]+)\n
+                                  .*hwaddr:([^\n]+)\n
+                              """,re.I|re.X|re.S)
+        result = {}
+        project = ['device','driver','desc','hwaddr']
+        #print kuzuInfo
+        for ls in kuzuInfo:
+            if ls.find("NETWORK") > 0:
+                try:
+                    nCinfo = findAll.findall(ls)[0]
+                    nCinfo = [ x.strip() for x in nCinfo]
+                    nCinfo = dict(zip(project,nCinfo))
+                    cardName = nCinfo['device']
+                    try:
+                        if result[cardName]:
+                            pass
+                    except KeyError:
+                        result[cardName] = nCinfo
+                except (ValueError,IndexError),error:
+                    pass
+        if result:
+            return  result
+        else:
+            return None
+
+dmidecode = Dmidecode()
+kudzu     = Kudzu()
 if __name__ == "__main__":
-    dmidecode = Dmidecode()
     print dmidecode.blosInfo()
     print dmidecode.systemInfo()
-    print dmidecode.cache()
-    print dmidecode.cpu()
-    print dmidecode.memory()
+    print dmidecode.cacheInfo()
+    print dmidecode.cpuInfo()
+    print dmidecode.memoryInfo()
+    print kudzu.networkCard()
