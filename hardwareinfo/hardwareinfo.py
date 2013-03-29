@@ -181,10 +181,10 @@ class Kudzu():
 
     def networkCard(self):
         kuzuInfo = self.kudzuInfo
-        findAll = re.compile(r"""device:([^\n]+)\n
-                                  .*driver:([^\n]+)\n
-                                  .*desc:([^\n]+)\n
-                                  .*hwaddr:([^\n]+)\n
+        findAll = re.compile(r"""device:([^\n]+)\n       #设备编号
+                                  .*driver:([^\n]+)\n    #驱动版本
+                                  .*desc:([^\n]+)\n      #详情
+                                  .*hwaddr:([^\n]+)\n    #MAC 地址
                               """,re.I|re.X|re.S)
         result = {}
         project = ['device','driver','desc','hwaddr']
