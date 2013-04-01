@@ -129,7 +129,7 @@ class Dmidecode():
             return None
     def memoryInfo(self):
         dmidecodeInfo = self.dmidecodeInfo
-        findAll = re.compile(r"""size:([^\n]+)\n                 #内存大小
+        findAll = re.compile(r"""size:([^\n]+)\n                #内存大小
                                   .*\tlocator:([^\n]+)\n         #内存插槽位置
                                   .*type:([^\n]+)\n              #内存类型
                                   .*speed:([^\n]+)\n             #内存时钟频率
@@ -181,7 +181,7 @@ class Kudzu():
 
     def networkCard(self):
         kuzuInfo = self.kudzuInfo
-        findAll = re.compile(r"""device:([^\n]+)\n       #设备编号
+        findAll = re.compile(r"""device:([^\n]+)\n      #设备编号
                                   .*driver:([^\n]+)\n    #驱动版本
                                   .*desc:([^\n]+)\n      #详情
                                   .*hwaddr:([^\n]+)\n    #MAC 地址
