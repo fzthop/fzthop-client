@@ -28,13 +28,13 @@ class Dmidecode():
 
     def blosInfo(self):
         dmidecodeInfo = self.dmidecodeInfo
-        findAll = re.compile(r"""vendor:([^\n]+)\n            #制造商信息
+        findAll = re.compile(r"""vendor:([^\n]+)\n             #制造商信息
                                  .*version:([^\n]+)\n          #BLOS版本
                                  .*release\s+date:([^\n]+)\n   #生产日期
-                                 #.*address:([^\n]+)\n         #blos地址
+                                 .*address:([^\n]+)\n          #blos地址
                                  """,re.I|re.X|re.S)
         result = {}
-        project = ['vendor','version','releaseDate']
+        project = ['vendor','version','releaseDate','address']
         for ls in dmidecodeInfo:
             #print ls
             if ls.find("BIOS Information") > 0:
@@ -255,10 +255,31 @@ class Kudzu():
 
 dmidecode = Dmidecode()
 kudzu     = Kudzu()
+
+def main():
+    """
+    单元测试
+    """
+    mark1 = "=/" * 20
+    mark2 = "~*" * 20
+    project = ['blos','system','cache','cpu','mem','net']
+    p2      = ['cpu','mem','net']
+    info = [dmidecode.blosInfo(),dmidecode.systemInfo(),dmidecode.cacheInfo(),
+            dmidecode.cpuInfo(),dmidecode.memoryInfo(),kudzu.networkCard()]
+    for num,pro in enumerate(project):
+        print "%s%s%s" %(mark1,pro,mark1)
+        dictInfo = info[num]
+        if dictInfo is not None:
+            for key in dictInfo.keys():
+                if pro in p2:
+                    print mark2
+                    dictInfo2 = dictInfo[key]
+                    for key2 in dictInfo2.keys():
+                        print "    %s:%s" %(key2,dictInfo2[key2])
+                else:
+                    print "%s:%s" %(key,dictInfo[key])
+        else:
+            print "obtain error"
+
 if __name__ == "__main__":
-    print dmidecode.blosInfo()
-    print dmidecode.systemInfo()
-    print dmidecode.cacheInfo()
-    print dmidecode.cpuInfo()
-    print dmidecode.memoryInfo()
-    print kudzu.networkCard()
+    main()
