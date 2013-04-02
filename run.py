@@ -4,5 +4,10 @@
 
 """
 import hardwareinfo
+import serverstatus
+import scoket
+import urlib2
 
-hardwareinfo.netCardinfo()
+
+hardware = hardwareinfo.newInfo()
+print hardware

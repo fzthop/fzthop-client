@@ -208,6 +208,51 @@ class Kudzu():
         else:
             return None
 
+#class Diskinfo():
+#    """
+#    获取硬盘信息
+#    """
+#    def __init__(self):
+#        smartctlCmd  = "/usr/sbin/smartctl -i"
+#        fdiskCmd     = "/sbin/fdisk -l"
+#        subp      = subprocess.Popen(fdiskCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+#        fdiskInfo = subp.stdout.read()
+#        if subp.poll() == 0:
+#            fdiskInfo = fdiskInfo
+#        else:
+#            fdiskInfo = ""
+#
+#        self.fdiskInfo = fdiskInfo
+#
+#    def networkCard(self):
+#        kuzuInfo = self.kudzuInfo
+#        findAll = re.compile(r"""device:([^\n]+)\n      #设备编号
+#                                  .*driver:([^\n]+)\n    #驱动版本
+#                                  .*desc:([^\n]+)\n      #详情
+#                                  .*hwaddr:([^\n]+)\n    #MAC 地址
+#                              """,re.I|re.X|re.S)
+#        result = {}
+#        project = ['device','driver','desc','hwaddr']
+#        #print kuzuInfo
+#        for ls in kuzuInfo:
+#            if ls.find("NETWORK") > 0:
+#                try:
+#                    nCinfo = findAll.findall(ls)[0]
+#                    nCinfo = [ x.strip() for x in nCinfo]
+#                    nCinfo = dict(zip(project,nCinfo))
+#                    cardName = nCinfo['device']
+#                    try:
+#                        if result[cardName]:
+#                            pass
+#                    except KeyError:
+#                        result[cardName] = nCinfo
+#                except (ValueError,IndexError),error:
+#                    pass
+#        if result:
+#            return  result
+#        else:
+#            return None
+
 dmidecode = Dmidecode()
 kudzu     = Kudzu()
 if __name__ == "__main__":
