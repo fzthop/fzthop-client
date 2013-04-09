@@ -194,7 +194,7 @@ def run(timeStamp):
         SendBuffer = {}
     if len(SendTmp) > SendBuffersize:
         logging.critical("Max buffer size:%s,The current buffer size:%s,messages lost."
-                         %(SendBuffersize,len(SendTmp))
+                         %(SendBuffersize,len(SendTmp)))
         SendBuffer = {}
 
 if __name__ == '__main__':
