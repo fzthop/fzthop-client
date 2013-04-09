@@ -93,7 +93,7 @@ def initlog(loglevel,logname):
     logger    = logging.getLogger()
     hdlr      = logging.handlers.RotatingFileHandler(logname,'a', 10*1024*1024,7)
     console   = logging.StreamHandler()
-    formatter = logging.Formatter('[%(asctime)s][%(thread)d][%(threadName)s][%(levelname)s] %(message)s')
+    formatter = logging.Formatter('[%(asctime)s][%(levelname)s] %(message)s')
     hdlr.setFormatter(formatter)
     console.setFormatter(formatter)
     logger.addHandler(hdlr)
@@ -205,7 +205,9 @@ if __name__ == '__main__':
         timeStamp = int(time.time())
         ltime = time.localtime(timeStamp)
         minutes = time.strftime('%M',ltime)
-        minutes = int(minutes)
+        second  = time.strftime('%S',ltime)
+        minutes,second = int(minutes),int(second)
         if minutes in interval(Interval):
-            run(timeStamp)
-        time.sleep(60)
+            if second == 0:
+                run(timeStamp)
+        time.sleep(1)
