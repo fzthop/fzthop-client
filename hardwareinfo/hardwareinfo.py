@@ -42,7 +42,7 @@ class Dmidecode():
                     blosInfo = findAll.findall(ls)[0]
                     blosInfo = [x.strip() for x in blosInfo]
                     result =  dict(zip(project,blosInfo))
-                except (ValueError,IndexError),error:
+                except (ValueError,IndexError):
                     pass
         if result:
             return  result
@@ -65,7 +65,7 @@ class Dmidecode():
                     systemInfo = findAll.findall(ls)[0]
                     systemInfo = [x.strip() for x in systemInfo]
                     result =  dict(zip(project,systemInfo))
-                except (ValueError,IndexError),error:
+                except (ValueError,IndexError):
                     pass
         if result:
             return  result
@@ -86,7 +86,7 @@ class Dmidecode():
                     cache = findAll.findall(ls)[0]
                     cache =  [x.strip() for x in cache]
                     result= dict(zip(project,cache))
-                except (ValueError,IndexError),error:
+                except (ValueError,IndexError):
                     pass
         if result:
             return  result
@@ -121,7 +121,7 @@ class Dmidecode():
                             pass
                     except KeyError:
                         result[cpuNum] = cpuInfo
-                except (ValueError,IndexError),error:
+                except (ValueError,IndexError):
                     pass
         if result:
             return  result
@@ -155,7 +155,7 @@ class Dmidecode():
                             pass
                     except KeyError:
                         result[memoryNum] = memoryInfo
-                except (ValueError,IndexError),error:
+                except (ValueError,IndexError):
                     pass
         if result:
             return  result
@@ -201,7 +201,7 @@ class Kudzu():
                             pass
                     except KeyError:
                         result[cardName] = nCinfo
-                except (ValueError,IndexError),error:
+                except (ValueError,IndexError):
                     pass
         if result:
             return  result
@@ -275,7 +275,7 @@ def main():
                     print mark2
                     dictInfo2 = dictInfo[key]
                     for key2 in dictInfo2.keys():
-                        print "    %s:%s" %(key2,dictInfo2[key2])
+                        print "\t%s:%s" %(key2,dictInfo2[key2])
                 else:
                     print "%s:%s" %(key,dictInfo[key])
         else:
