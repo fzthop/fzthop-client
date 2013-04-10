@@ -3,7 +3,7 @@
 """
 
 """
-from json import dumps
+from json import dumps,loads
 from platform import uname
 import time
 import os,sys
@@ -13,14 +13,18 @@ import logging.handlers
 import hardwareinfo
 import systeminfo
 
+#-----------------------configure-----------------------
+#[local configure]
 SendBuffersize = 10240000
 Interval = 1
 LogName  = 'client.log'
-
+#[socket configure]
 Server = '127.0.0.1'
 Port   = 1088
 PassWorld="abc"
 
+
+#-------------------progrom------------------------------
 def daemonize(pidfile='client.pid',
               stdin='/dev/null',
               stdout='/dev/null',
@@ -165,9 +169,11 @@ def run(timeStamp):
     """
     global  SendBuffer
     systemInfo = hardwareinfo.systemInfo()
-    localid = systemInfo['uuid']
+    hostid = systemInfo['uuid']
+    maxIp = systeminfo.maxInetipadd()
     osVersion,osName,kernel = uname()[0:3]
-    keys = ['localid',          #主机ID，根据主板UUID生成
+    keys = ['hostid',          #主机ID，根据主板UUID生成
+            'ipadd',            #最大的公网ip
             'osVersion',        #操作系统名称{linux,windows}
             'osName',           #主机名称
             'kernel',           #内核版本
@@ -176,7 +182,8 @@ def run(timeStamp):
             'system',           #运行信息
             'time'              #当前时间戳
             ]
-    values = [localid,
+    values = [hostid,
+              maxIp,
               osVersion,
               osName,
               kernel,
@@ -188,6 +195,7 @@ def run(timeStamp):
     info = dict(zip(keys,values))
     SendBuffer[timeStamp] = info
     SendTmp = dumps(SendBuffer)
+    logging.debug("Send data:%s" %SendBuffer[timeStamp])
     status = send(SendTmp,Server,Port)
     if status == 0:
         logging.info("Send status:%s,clear buffer" %status)

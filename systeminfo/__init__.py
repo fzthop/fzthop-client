@@ -10,6 +10,7 @@ __all__      = ['cpu','physicalMem','buffersMem','swapMem','partition','uptime',
                 'process','netCard','iostat','total']
 
 from systeminfo import top,free,net,df,io
+from ipaddress import ipaddress
 
 def cpu():
     return top.processStatus()
@@ -37,6 +38,19 @@ def netCard():
 
 def iostat():
     return io.detail()
+
+def maxInetipadd():
+    result = []
+    cardInfo = net.detail()
+    for card in cardInfo.keys():
+        netInfo = cardInfo[card]
+        ip = netInfo['ip']
+        if ip is not None:
+            result.append(ip)
+    if result:
+        return  ipaddress.maxInetip(result)
+    else:
+        return None
 
 def total():
     """

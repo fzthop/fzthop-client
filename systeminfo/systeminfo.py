@@ -137,7 +137,7 @@ class Free():
                                   \s+(\d+)   #系统已分配但未被使用的cache数量
                              """,re.X)
         result = {}
-        project = ['total','userd','free','shard','buffers','cached']
+        project = ['total','used','free','shard','buffers','cached']
         phInfo = findAll.findall(phInfo)[0]
         try:
             phInfo = [x.strip() for x in phInfo]
@@ -198,29 +198,55 @@ class Netcard():
     """
     def __init__(self):
         netFile = "/proc/net/dev"
+        ifconfigCmd = "/sbin/ifconfig"
         try:
             netInfo = open(netFile,'r').read()
             netInfo = netInfo.replace(':',' ')
             netInfo = netInfo.split('\n')
         except IOError:
-            netInfo = ""
+            netInfo = []
+        subp   = subprocess.Popen(ifconfigCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+        ifconfigInfo = subp.stdout.read()
+        if subp.poll() == 0:
+            ifconfigInfo = ifconfigInfo.split("\n\n")
+        else:
+             ifconfigInfo = []
         self.netInfo = netInfo
-
+        self.ifconfigInfo = ifconfigInfo
     def detail(self):
         netInfo = self.netInfo
+        ifconfigInfo = self.ifconfigInfo
+        findAll = re.compile(r"""(\w+\d+)
+                                 .*addr:(\d+.\d+.\d+.\d+)
+                              """,re.I|re.X|re.S)
         try:
             netInfo = netInfo[2::]
         except IndexError:
             netInfo = ""
         result = {}
-        project = ['in','out','name']
+        ipadd = {}
+        project = ['in','out','name','ip']
+        for ip in ifconfigInfo:
+            try:
+                ipname,ip =  findAll.findall(ip)[0]
+                ipadd.setdefault(ipname,[]).append(ip)
+            except (ValueError,IndexError):
+                pass
         for net in netInfo:
             net =  re.split('\s+',net.strip())
             if len(net) == 17:
                 cardName,receiveBytes = net[0],net[1]
                 transmitBytes = net[9]
+                try:
+                    ip = ipadd[cardName]
+                    if len(str(ip)) > 15:
+                        ip = ','.join(ip)
+                except KeyError:
+                    ip = None
                 traffic = dict(zip(project,
-                                (receiveBytes,transmitBytes,cardName)))
+                                (receiveBytes,transmitBytes,cardName,ip)
+                                )
+                             )
                 try:
                     if result[cardName]:
                         pass
