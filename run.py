@@ -207,9 +207,17 @@ def run(timeStamp):
         SendBuffer = {}
 
 if __name__ == '__main__':
+    try:
+        options = sys.argv[1]
+    except IndexError:
+        options = ''
+    if options == '-d':
+        initlog(10,LogName)
+    else:
+        daemonize()
+        initlog(20,LogName)
     SendBuffer={}
-    initlog(20,LogName)
-    daemonize()
+
     while True:
         timeStamp = int(time.time())
         ltime = time.localtime(timeStamp)

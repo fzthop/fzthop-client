@@ -8,7 +8,7 @@ __date__    = '2013-03-29'
 __all__     = [ 'totalInfo','blosInfo','systemInfo','cacheInfo',
                 'cpuInfo','memoryInfo','netCardinfo','newInfo']
 
-from hardwareinfo import dmidecode,kudzu
+from hardwareinfo import dmidecode,kudzu,partedinfo
 import os
 
 def blosInfo():
@@ -29,9 +29,12 @@ def memoryInfo():
 def netCardinfo():
     return kudzu.networkCard()
 
+def diskInfo():
+    return partedinfo.diskInfo()
+
 def totalInfo():
-    project = ['blos','system','cache','cpu','mem','net']
-    info = [blosInfo(),systemInfo(),cacheInfo(),cpuInfo(),memoryInfo(),netCardinfo()]
+    project = ['blos','system','cache','cpu','mem','net','disk']
+    info = [blosInfo(),systemInfo(),cacheInfo(),cpuInfo(),memoryInfo(),netCardinfo(),diskInfo()]
     totalInfo = dict(zip(project,info))
     return totalInfo
 
@@ -45,11 +48,8 @@ def newInfo(path='/tmp',cachename='hardware.info'):
     except IOError:
         cache = ""
     if str(info) != str(cache):
-        try:
-            fileHandle = open(filename,'w+')
-            fileHandle.write(str(info))
-        finally:
-            fileHandle.close()
+        fileHandle = open(filename,'w+')
+        fileHandle.write(str(info))
         return info
     else:
         return None

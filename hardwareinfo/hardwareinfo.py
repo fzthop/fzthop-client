@@ -196,6 +196,7 @@ class Kudzu():
                     nCinfo = [ x.strip() for x in nCinfo]
                     nCinfo = dict(zip(project,nCinfo))
                     cardName = nCinfo['device']
+                    cardName = cardName.split(":")[0]
                     try:
                         if result[cardName]:
                             pass
@@ -208,53 +209,53 @@ class Kudzu():
         else:
             return None
 
-#class Diskinfo():
-#    """
-#    获取硬盘信息
-#    """
-#    def __init__(self):
-#        smartctlCmd  = "/usr/sbin/smartctl -i"
-#        fdiskCmd     = "/sbin/fdisk -l"
-#        subp      = subprocess.Popen(fdiskCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-#        fdiskInfo = subp.stdout.read()
-#        if subp.poll() == 0:
-#            fdiskInfo = fdiskInfo
-#        else:
-#            fdiskInfo = ""
-#
-#        self.fdiskInfo = fdiskInfo
-#
-#    def networkCard(self):
-#        kuzuInfo = self.kudzuInfo
-#        findAll = re.compile(r"""device:([^\n]+)\n      #设备编号
-#                                  .*driver:([^\n]+)\n    #驱动版本
-#                                  .*desc:([^\n]+)\n      #详情
-#                                  .*hwaddr:([^\n]+)\n    #MAC 地址
-#                              """,re.I|re.X|re.S)
-#        result = {}
-#        project = ['device','driver','desc','hwaddr']
-#        #print kuzuInfo
-#        for ls in kuzuInfo:
-#            if ls.find("NETWORK") > 0:
-#                try:
-#                    nCinfo = findAll.findall(ls)[0]
-#                    nCinfo = [ x.strip() for x in nCinfo]
-#                    nCinfo = dict(zip(project,nCinfo))
-#                    cardName = nCinfo['device']
-#                    try:
-#                        if result[cardName]:
-#                            pass
-#                    except KeyError:
-#                        result[cardName] = nCinfo
-#                except (ValueError,IndexError),error:
-#                    pass
-#        if result:
-#            return  result
-#        else:
-#            return None
+class Partedinfo():
+    """
+    获取硬盘信息
+    """
+    def __init__(self):
+        partedCmd  = "/sbin/parted -l"
+        subp      = subprocess.Popen(partedCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+        partedInfo = subp.stdout.read()
+        if subp.poll() == 0:
+            #partedInfo = partedInfo.strip("\n")
+            partedInfo = partedInfo.split("\n\n")
+        else:
+            partedInfo = []
+        self.partedInfo = partedInfo
+
+    def diskInfo(self):
+        partedInfo = self.partedInfo
+        findAll = re.compile(r"""model:([^\n]+)\n    #硬盘模式，制造商，序列号，连接方式
+                               .*disk([^:]+)         #挂载节点
+                                 :([^\n]+)\n         #硬盘大小
+                              """,re.I|re.X|re.S)
+        result = {}
+        project = ['model','device','size']
+        #print partedInfo
+        for ls in partedInfo:
+            if ls.find("Model") >= 0:
+                try:
+                    diskInfo = findAll.findall(ls)[0]
+                    diskInfo = [ x.strip() for x in diskInfo]
+                    diskInfo = dict(zip(project,diskInfo))
+                    device = diskInfo['device']
+                    #print diskInfo
+                    try:
+                        if result[device]:
+                            pass
+                    except KeyError:
+                        result[device] = diskInfo
+                except (ValueError,IndexError):
+                    pass
+        if result:
+            return  result
+        else:
+            return None
 
 dmidecode = Dmidecode()
 kudzu     = Kudzu()
+partedinfo = Partedinfo()
 
 def main():
     """
@@ -262,10 +263,10 @@ def main():
     """
     mark1 = "=/" * 20
     mark2 = "~*" * 20
-    project = ['blos','system','cache','cpu','mem','net']
-    p2      = ['cpu','mem','net']
+    project = ['blos','system','cache','cpu','mem','net','disk']
+    p2      = ['cpu','mem']
     info = [dmidecode.blosInfo(),dmidecode.systemInfo(),dmidecode.cacheInfo(),
-            dmidecode.cpuInfo(),dmidecode.memoryInfo(),kudzu.networkCard()]
+            dmidecode.cpuInfo(),dmidecode.memoryInfo(),kudzu.networkCard(),partedinfo.diskInfo()]
     for num,pro in enumerate(project):
         print "%s%s%s" %(mark1,pro,mark1)
         dictInfo = info[num]
