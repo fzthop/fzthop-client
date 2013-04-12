@@ -217,7 +217,7 @@ def disk_stat():
 
 
 def net_stat(): 
-    ''' data of netstat from /proc/net/dev
+    ''' pretreatment of netstat from /proc/net/dev
     return:
 data_keys = {
         'netstat': {}

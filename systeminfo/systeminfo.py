@@ -98,7 +98,7 @@ class Top():
                                .*\s(\d.*)%st    #实时
                              """,re.X)
         result = {}
-        project = ['us','sy','ni','id','wa','hi','si','st']
+        project = ['us','sy','ni','idle','wa','hi','si','st']
         cpuInfo = findAll.findall(cpuInfo)[0]
         try:
             cpuInfo = [x.strip() for x in cpuInfo]
@@ -225,7 +225,7 @@ class Netcard():
             netInfo = ""
         result = {}
         ipadd = {}
-        project = ['in','out','name','ip']
+        project = ['input','output','name','ipadd']
         for ip in ifconfigInfo:
             try:
                 ipname,ip =  findAll.findall(ip)[0]
@@ -292,8 +292,8 @@ class Df():
         except IndexError:
             dfSizeinfo = ""
             dfNodeinfo = ""
-        project = ['fileSystem','size','used','availUse',
-                       'sizeUse','mountedOn','nodeUse']
+        project = ['filesystem','size','used','availused',
+                       'sizeuse','mountedon','nodeuse']
         result = {}
         for size in dfSizeinfo:
             size = re.split("\s+",size)

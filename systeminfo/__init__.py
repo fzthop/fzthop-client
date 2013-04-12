@@ -13,7 +13,7 @@ from systeminfo import top,free,net,df,io
 from ipaddress import ipaddress
 
 def cpu():
-    return top.processStatus()
+    return top.cpuLoad()
 
 def physicalMem():
     return free.physicalMem()
@@ -44,7 +44,7 @@ def maxInetipadd():
     cardInfo = net.detail()
     for card in cardInfo.keys():
         netInfo = cardInfo[card]
-        ip = netInfo['ip']
+        ip = netInfo['ipadd']
         if ip is not None:
             result.append(ip)
     if result:

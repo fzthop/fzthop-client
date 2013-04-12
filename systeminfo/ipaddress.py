@@ -53,3 +53,14 @@ class Ipaddress():
             return ipString(ip)
 
 ipaddress = Ipaddress()
+
+def test():
+    """
+    单元测试
+    """
+    data1 = ['172.16.0.1,183.88.20.2','192.168.0.5','221.202.33.44']
+    data2 = ['192.168.0.1,192.168.10.80','172.16.30.33']
+    print "Max ip address:%s" %ipaddress.maxInetip(data1)
+    print "Max ip address:%s" %ipaddress.maxInetip(data2)
+if __name__ == "__main__":
+    test()

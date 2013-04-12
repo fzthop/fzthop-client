@@ -21,7 +21,7 @@ LogName  = 'client.log'
 #[socket configure]
 Server = '127.0.0.1'
 Port   = 1088
-PassWorld="abc"
+PassWord="abc"
 
 
 #-------------------progrom------------------------------
@@ -177,7 +177,7 @@ def run(timeStamp):
             'osVersion',        #操作系统名称{linux,windows}
             'osName',           #主机名称
             'kernel',           #内核版本
-            'passrod',          #服务器认证密码
+            'passwrod',          #服务器认证密码
             'hardware',         #硬件信息
             'system',           #运行信息
             'time'              #当前时间戳
@@ -187,7 +187,7 @@ def run(timeStamp):
               osVersion,
               osName,
               kernel,
-              PassWorld,
+              PassWord,
               hardwareinfo.newInfo(),
               systeminfo.total(),
               timeStamp
@@ -195,7 +195,8 @@ def run(timeStamp):
     info = dict(zip(keys,values))
     SendBuffer[timeStamp] = info
     SendTmp = dumps(SendBuffer)
-    logging.debug("Send data:%s" %SendBuffer[timeStamp])
+    logging.debug("Send pretreatment:%s" %SendBuffer[timeStamp])
+    logging.debug("Send buffer sieze:%s" %len(SendTmp))
     status = send(SendTmp,Server,Port)
     if status == 0:
         logging.info("Send status:%s,clear buffer" %status)
