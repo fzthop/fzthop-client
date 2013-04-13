@@ -215,40 +215,48 @@ def disk_stat():
    # print disk_dict
     return {'diskstat': disk_dict} 
 
+def get_one_traffic():
+    """ 获得单次累积网卡流量  
+    """
 
-def net_stat(): 
-    ''' pretreatment of netstat from /proc/net/dev
-    return:
-data_keys = {
-        'netstat': {}
-        }
-    '''
-
-    data_keys = {}
-    net_dict = {} 
+    one_net_dict = {}
     with open("/proc/net/dev") as f:
-        for line in f.readlines()[2:]: 
-            if not line.strip().startswith(('eth', 'bond')):continue 
-            con = re.split('[ :]+',line.strip()) 
-            net_dict[con[0]] = dict( 
+        for line in f.readlines()[2:]:
+            if not line.strip().startswith(('eth', 'bond')):continue
+            con = re.split('[ :]+',line.strip())
+            one_net_dict[con[0]] = dict(
                 zip(
-                    ( 'ReceiveBytes', 'ReceivePackets', 'ReceiveErrs',
-                      'ReceiveDrop', 'ReceiveFifo', 'ReceiveFrames',
-                      'ReceiveCompressed', 'ReceiveMulticast', 'TransmitBytes',
-                      'TransmitPackets', 'TransmitErrs', 'TransmitDrop', 
-                      'TransmitFifo', 'TransmitFrames', 'TransmitCompressed',
-                      'TransmitMulticast' ),
+                    ( 'in(bit/s)', 'in(packets/s)', 'inerrs(packet/s)',
+                      'indrop(packet/s)', 'out(bit/s)', 'out(packets/s)',
+                      'outerrs(packet/s)', 'outdrop(packet/s)' ),
                     ( con[1], con[2], con[3],
-                      con[4], con[5], con[6],
-                      con[7], con[8], con[9],
-                      con[10], con[11], con[12],
-                      con[13], con[14], con[15],
-                      con[16], ) 
-                 ) 
+                      con[4], con[9], con[10], 
+                      con[11], con[12], ) 
+                )
             )
 
-    #print net_dict 
-    return {'netstat': net_dict} 
+   # print one_net_dict
+    return one_net_dict
+
+def net_stat():
+    """ 获得每秒网卡流量
+        单位：bit/s、packet/s
+    """
+    net_dict = {}
+    old_net = get_one_traffic()
+    time.sleep(1)
+    now_net = get_one_traffic()
+    for dev,nets in old_net.items():
+         
+        dif_net = [(abs(int(t2)-int(t1)) * 8) for t1, t2 in zip(nets.values(), now_net[dev].values())]
+        net_dict[dev] = dict(
+            zip(
+                nets.keys(),
+                dif_net
+            )  
+        ) 
+    #print net_dict
+    return {'netstat': net_dict}
 
 def server_stat():
     '''server status

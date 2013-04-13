@@ -3,12 +3,13 @@
 #获取服务器资源使用情况 
 
 __authors__  = ['ARES-HHD <ARES.HHD@gmail.com>', ]
-__version__  = "0.2"
-__date__     = "2013-3-28"
+__version__  = "0.2.1"
+__date__     = "2013-4-13"
 __license__  = "GPL v2.0"
 
 import subprocess
 import json
+import time
 import os
 import re
 
@@ -128,30 +129,48 @@ def disk_stat():
    # print disk_dict
     return {'diskstat': disk_dict} 
 
-
-def net_stat():
-    """ 网卡流量  
+def get_one_traffic():
+    """ 获得单次累积网卡流量  
     """
 
-    net_disk = {}
+    one_net_dict = {}
     with open("/proc/net/dev") as f:
         for line in f.readlines()[2:]:
             if not line.strip().startswith(('eth', 'bond')):continue
             con = re.split('[ :]+',line.strip())
-            net_disk[con[0]] = dict(
+            one_net_dict[con[0]] = dict(
                 zip(
-                    ( 'ReceiveBytes', 'ReceivePackets', 'ReceiveErrs',
-                      'ReceiveDrop', 'ReceiveFifo', 'ReceiveFrames',
-                      'ReceiveCompressed', 'ReceiveMulticast', 'TransmitBytes',
-                      'TransmitPackets', 'TransmitErrs', 'TransmitDrop',
-                      'TransmitFifo', 'TransmitFrames', 'TransmitCompressed',
-                      'TransmitMulticast' ),
-                      con[1:17]
+                    ( 'in(bit/s)', 'in(packets/s)', 'inerrs(packet/s)',
+                      'indrop(packet/s)', 'out(bit/s)', 'out(packets/s)',
+                      'outerrs(packet/s)', 'outdrop(packet/s)' ),
+                    ( con[1], con[2], con[3],
+                      con[4], con[9], con[10], 
+                      con[11], con[12], ) 
                 )
             )
 
-    #print net_disk
-    return {'netstat': net_disk}
+   # print one_net_dict
+    return one_net_dict
+
+def net_stat():
+    """ 获得每秒网卡流量
+        单位：bit/s、packet/s
+    """
+    net_dict = {}
+    old_net = get_one_traffic()
+    time.sleep(1)
+    now_net = get_one_traffic()
+    for dev,nets in old_net.items():
+         
+        dif_net = [(abs(int(t2)-int(t1)) * 8) for t1, t2 in zip(nets.values(), now_net[dev].values())]
+        net_dict[dev] = dict(
+            zip(
+                nets.keys(),
+                dif_net
+            )  
+        ) 
+    #print net_dict
+    return {'netstat': net_dict}
 
 def io_stat():
     """ 磁盘IO
