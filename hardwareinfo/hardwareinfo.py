@@ -12,7 +12,7 @@ class Dmidecode():
     获取板载信息
     """
     def __init__(self):
-        dmidecodeCmd = "/usr/sbin/dmidecode"
+        dmidecodeCmd = "/bin/env dmidecode"
         #if os.path.isfile(dmidecodeCmd):
         subp   = subprocess.Popen(dmidecodeCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         dmidecodeInfo= subp.stdout.read()
@@ -20,10 +20,6 @@ class Dmidecode():
             dmidecodeInfo = dmidecodeInfo.split("\n\n")
         else:
             dmidecodeInfo = []
-#        #test--code
-#        dmidecodeInfo = open(r"dmidecode.info").read()
-#        dmidecodeInfo = dmidecodeInfo.split("\n\n")
-#        #test--code
         self.dmidecodeInfo = dmidecodeInfo
 
     def blosInfo(self):
@@ -166,7 +162,7 @@ class Kudzu():
     获取网卡信息
     """
     def __init__(self):
-        kudzuCmd  = "/sbin/kudzu --probe --class=network"
+        kudzuCmd  = "/bin/env kudzu --probe --class=network"
         subp      = subprocess.Popen(kudzuCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         kudzuInfo = subp.stdout.read()
         if subp.poll() == 0:
@@ -214,7 +210,7 @@ class Partedinfo():
     获取硬盘信息
     """
     def __init__(self):
-        partedCmd  = "/sbin/parted -l"
+        partedCmd  = "/bin/env parted -l"
         subp      = subprocess.Popen(partedCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         partedInfo = subp.stdout.read()
         if subp.poll() == 0:

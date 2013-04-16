@@ -15,8 +15,8 @@ import systeminfo
 
 #-----------------------configure-----------------------
 #[local configure]
-SendBuffersize = 10240000
-Interval = 1
+SendBuffersize = 1024000
+Interval = 5
 LogName  = 'client.log'
 #[socket configure]
 Server = '127.0.0.1'
@@ -112,7 +112,7 @@ def interval(interval):
     numList = [i for i in range(60)]
     return numList[::interval]
 
-def send(sendObj,address,port,timeout=10):
+def send(sendObj,address,port,timeout=30):
     """
     发送数据并返回状态
     0       成功
@@ -143,7 +143,7 @@ def send(sendObj,address,port,timeout=10):
         status = 13
     if status == 0:
         try:
-            sock.send(sendObj)
+            sock.sendall(sendObj)
             bakStatus = sock.recv(1024)
             if bakStatus == '00':
                 logging.info("Send %s byes to %s:%s ok"
@@ -194,7 +194,7 @@ def run(timeStamp):
             ]
     info = dict(zip(keys,values))
     SendBuffer[timeStamp] = info
-    SendTmp = dumps(SendBuffer)
+    SendTmp = dumps(SendBuffer) + "\r\n"
     logging.debug("Send pretreatment:%s" %SendBuffer[timeStamp])
     logging.debug("Send buffer sieze:%s" %len(SendTmp))
     status = send(SendTmp,Server,Port)

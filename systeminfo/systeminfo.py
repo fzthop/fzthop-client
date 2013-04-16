@@ -9,25 +9,9 @@ import re
 
 class Top():
     """
-
     """
     def __init__(self):
-#        topConf = """RCfile for "top with windows"           # shameless braggin'
-#                    Id:a, Mode_altscr=0, Mode_irixps=1, Delay_time=3.000, Curwin=0
-#                    Def     fieldscur=AEHIOQTWKNMbcdfgjplrsuvyzX
-#                            winflags=30009, sortindx=10, maxtasks=0
-#                            summclr=1, msgsclr=1, headclr=3, taskclr=1
-#                    Job     fieldscur=ABcefgjlrstuvyzMKNHIWOPQDX
-#                            winflags=62777, sortindx=0, maxtasks=0
-#                            summclr=6, msgsclr=6, headclr=7, taskclr=6
-#                    Mem     fieldscur=ANOPQRSTUVbcdefgjlmyzWHIKX
-#                            winflags=62777, sortindx=13, maxtasks=0
-#                            summclr=5, msgsclr=5, headclr=4, taskclr=5
-#                    Usr     fieldscur=ABDECGfhijlopqrstuvyzMKNWX
-#                            winflags=62777, sortindx=4, maxtasks=0
-#                            summclr=3, msgsclr=3, headclr=2, taskclr=3
-#                """
-        topCmd = "/usr/bin/top -bi -n 1 -d 0.02"
+        topCmd = "/bin/env top -bi -n 1 -d 0.02"
         subp   = subprocess.Popen(topCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         topInfo= subp.stdout.read()
         if subp.poll() == 0:
@@ -47,8 +31,8 @@ class Top():
                              """,re.X)
         result = {}
         project = ['user','load1','load5','load15']
-        uptimeInfo = findAll.findall(uptimeInfo)[0]
         try:
+            uptimeInfo = findAll.findall(uptimeInfo)[0]
             uptimeInfo = [x.strip() for x in uptimeInfo]
             result =  dict(zip(project,uptimeInfo))
         except (ValueError,IndexError):
@@ -72,8 +56,8 @@ class Top():
                              """,re.X)
         result = {}
         project = ['total','running','sleeping','stopped','zombie']
-        processInfo = findAll.findall(processInfo)[0]
         try:
+            processInfo = findAll.findall(processInfo)[0]
             processInfo = [x.strip() for x in processInfo]
             result =  dict(zip(project,processInfo))
         except (ValueError,IndexError):
@@ -99,8 +83,8 @@ class Top():
                              """,re.X)
         result = {}
         project = ['us','sy','ni','idle','wa','hi','si','st']
-        cpuInfo = findAll.findall(cpuInfo)[0]
         try:
+            cpuInfo = findAll.findall(cpuInfo)[0]
             cpuInfo = [x.strip() for x in cpuInfo]
             result =  dict(zip(project,cpuInfo))
         except (ValueError,IndexError):
@@ -114,7 +98,7 @@ class Free():
 
     """
     def __init__(self):
-        freeCmd = "/usr/bin/free"
+        freeCmd = "/bin/env free"
         subp   = subprocess.Popen(freeCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         freeInfo = subp.stdout.read()
         if subp.poll() == 0:
@@ -138,8 +122,8 @@ class Free():
                              """,re.X)
         result = {}
         project = ['total','used','free','shard','buffers','cached']
-        phInfo = findAll.findall(phInfo)[0]
         try:
+            phInfo = findAll.findall(phInfo)[0]
             phInfo = [x.strip() for x in phInfo]
             result =  dict(zip(project,phInfo))
         except (ValueError,IndexError):
@@ -159,8 +143,8 @@ class Free():
                              """,re.X)
             result = {}
             project = ['buffers','cache']
-            buInfo = findAll.findall(buInfo)[0]
             try:
+                buInfo = findAll.findall(buInfo)[0]
                 buInfo = [x.strip() for x in buInfo]
                 result =  dict(zip(project,buInfo))
             except (ValueError,IndexError):
@@ -181,8 +165,8 @@ class Free():
                              """,re.X)
         result = {}
         project = ['total','used','free']
-        swapInfo = findAll.findall(swapInfo)[0]
         try:
+            swapInfo = findAll.findall(swapInfo)[0]
             swapInfo = [x.strip() for x in swapInfo]
             result =  dict(zip(project,swapInfo))
         except (ValueError,IndexError):
@@ -198,7 +182,7 @@ class Netcard():
     """
     def __init__(self):
         netFile = "/proc/net/dev"
-        ifconfigCmd = "/sbin/ifconfig"
+        ifconfigCmd = "/bin/env ifconfig"
         try:
             netInfo = open(netFile,'r').read()
             netInfo = netInfo.replace(':',' ')
@@ -262,8 +246,8 @@ class Df():
 
     """
     def __init__(self):
-        dfCmdsize = "/bin/df"
-        dfCmdnode = "/bin/df -i"
+        dfCmdsize = "/bin/env df"
+        dfCmdnode = "/bin/env df -i"
         subpSize   = subprocess.Popen(dfCmdsize, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         subpNode   = subprocess.Popen(dfCmdnode, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         dfSizeinfo = subpSize.stdout.read()
@@ -321,7 +305,7 @@ class Iostat():
 
     """
     def __init__(self):
-        iostatCmd = "/usr/bin/iostat -x"
+        iostatCmd = "/bin/env iostat -x"
         subp = subprocess.Popen(iostatCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         iostatInfo = subp.stdout.read()
         if subp.poll() == 0:

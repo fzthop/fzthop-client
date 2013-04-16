@@ -37,18 +37,18 @@ class Ipaddress():
             all.append(ip)
             if   aMin < ip < aMax:
                 pass
-            elif bMin < ip < aMax:
+            elif bMin < ip < bMax:
                 pass
             elif cMin < ip < cMax:
                 pass
             else:
                 ipInet.append(ip)
         if ipInet:
-            ipInet.reverse()
+            ipInet = sorted(ipInet,reverse=True)
             ip = ipInet[0]
             return ipString(ip)
         else:
-            all.reverse()
+            all = sorted(all,reverse=True)
             ip = all[0]
             return ipString(ip)
 
