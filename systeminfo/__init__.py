@@ -12,6 +12,17 @@ __all__      = ['cpu','physicalMem','buffersMem','swapMem','partition','uptime',
 from systeminfo import top,free,net,df,io
 from ipaddress import ipaddress
 
+def init():
+    """
+    重新初始化类，获取新信息
+    如未初始化，获取的信息是上一次初始化的信息
+    """
+    top.__init__()
+    free.__init__()
+    net.__init__()
+    df.__init__()
+    io.__init__()
+
 def cpu():
     return top.cpuLoad()
 

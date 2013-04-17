@@ -11,6 +11,15 @@ __all__     = [ 'totalInfo','blosInfo','systemInfo','cacheInfo',
 from hardwareinfo import dmidecode,kudzu,partedinfo
 import os
 
+def init():
+    """
+    重新初始化类，获取新信息
+    如未初始化，获取的信息是上一次初始化的信息
+    """
+    dmidecode.__init__()
+    kudzu.__init__()
+    partedinfo.__init__()
+
 def blosInfo():
     return  dmidecode.blosInfo()
 

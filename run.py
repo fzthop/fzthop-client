@@ -168,6 +168,9 @@ def run(timeStamp):
     主程序
     """
     global  SendBuffer
+    #重新初始化硬件和运行信息
+    hardwareinfo.init()
+    systeminfo.init()
     systemInfo = hardwareinfo.systemInfo()
     hostid = systemInfo['uuid']
     maxIp = systeminfo.maxInetipadd()
@@ -226,5 +229,6 @@ if __name__ == '__main__':
         minutes,second = int(minutes),int(second)
         if minutes in interval(Interval):
             if second == 0:
+
                 run(timeStamp)
         time.sleep(1)
