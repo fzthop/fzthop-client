@@ -11,10 +11,11 @@ class Top():
     """
     """
     def __init__(self):
-        topCmd = "/bin/env top -bi -n 1 -d 0.02"
+        topCmd = "/usr/bin/top -bi -n 3 -d 2"
         subp   = subprocess.Popen(topCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         topInfo= subp.stdout.read()
         if subp.poll() == 0:
+            topInfo = topInfo.split("\n\n\n")[2]
             topInfo = topInfo.split("\n")
         else:
             topInfo = []
@@ -98,7 +99,7 @@ class Free():
 
     """
     def __init__(self):
-        freeCmd = "/bin/env free"
+        freeCmd = "/usr/bin/free"
         subp   = subprocess.Popen(freeCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         freeInfo = subp.stdout.read()
         if subp.poll() == 0:
@@ -182,7 +183,7 @@ class Netcard():
     """
     def __init__(self):
         netFile = "/proc/net/dev"
-        ifconfigCmd = "/bin/env ifconfig"
+        ifconfigCmd = "/sbin/ifconfig"
         try:
             netInfo = open(netFile,'r').read()
             netInfo = netInfo.replace(':',' ')
@@ -246,8 +247,8 @@ class Df():
 
     """
     def __init__(self):
-        dfCmdsize = "/bin/env df"
-        dfCmdnode = "/bin/env df -i"
+        dfCmdsize = "/bin/df"
+        dfCmdnode = "/bin/df -i"
         subpSize   = subprocess.Popen(dfCmdsize, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         subpNode   = subprocess.Popen(dfCmdnode, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         dfSizeinfo = subpSize.stdout.read()
@@ -260,7 +261,7 @@ class Df():
             dfSizeinfo = []
         if subpNode.poll() == 0:
             dfNodeinfo = dfNodeinfo.replace('\n ','')
-            dfNodeinfo = dfNodeinfo.replace('% ','')
+            dfNodeinfo = dfNodeinfo.replace('%','')
             dfNodeinfo = dfNodeinfo.split('\n')
         else:
             dfNodeinfo = []
@@ -305,7 +306,7 @@ class Iostat():
 
     """
     def __init__(self):
-        iostatCmd = "/bin/env iostat -x"
+        iostatCmd = "/usr/bin/iostat -x"
         subp = subprocess.Popen(iostatCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         iostatInfo = subp.stdout.read()
         if subp.poll() == 0:
@@ -315,19 +316,24 @@ class Iostat():
         self.iostatInfo = iostatInfo
 
     def detail(self):
+        """
+        0        1          2       3     4        5       6        7          8        9       10      11
+        Device:  rrqm/s   wrqm/s   r/s   w/s     rsec/s   wsec/s    avgrq-sz avgqu-sz   await  svctm  %util
+        sda      0.03     621.37  0.13  10.79    10.58    5057.28   463.95     0.53     48.36   2.99   3.27
+        """
         iostatInfo = self.iostatInfo
         try:
             iostatInfo = iostatInfo[6::]
         except IndexError:
             iostatInfo = ''
-        project = ['await','util','device']
+        project = ['await','rsec','wsec','util','device']
         result ={}
         for info in iostatInfo:
             info = re.split('\s+',info)
             if len(info) != 12:
                 continue
-            key,await,util = info[0],info[-3],info[-1]
-            info = dict(zip(project,(await,util,key)))
+            key,rsec,wsec,await,util = info[0],info[5],info[6],info[9],info[11]
+            info = dict(zip(project,(await,rsec,wsec,util,key)))
             try:
                 if result[key]:
                     pass

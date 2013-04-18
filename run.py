@@ -25,7 +25,7 @@ PassWord="abc"
 
 
 #-------------------progrom------------------------------
-def daemonize(pidfile='client.pid',
+def daemonize(pidfile='/dev/null',
               stdin='/dev/null',
               stdout='/dev/null',
               stderr='/dev/null',
@@ -78,7 +78,7 @@ def daemonize(pidfile='client.pid',
     os.dup2(so.fileno(), sys.stdout.fileno())
     os.dup2(se.fileno(), sys.stderr.fileno())
 
-def initlog(loglevel,logname):
+def initlog(loglevel,path,logname):
     """
     @RotatingFileHandler( filename[, mode[, maxBytes[,backupCount]]])
     @setLevel
@@ -88,8 +88,7 @@ def initlog(loglevel,logname):
         DEBUG    20
         NOTSET   0
     """
-    cwd = os.getcwd()
-    logpath = cwd     + os.sep + 'log'
+    logpath =  path + os.sep +'log'
     logname = logpath + os.sep + logname
     if not os.path.exists(logpath):
         os.makedirs(logpath,0755)
@@ -101,7 +100,8 @@ def initlog(loglevel,logname):
     hdlr.setFormatter(formatter)
     console.setFormatter(formatter)
     logger.addHandler(hdlr)
-    logger.addHandler(console)
+    if loglevel < 20:
+        logger.addHandler(console)
     logger.setLevel(loglevel)
     return logger
 
@@ -210,15 +210,20 @@ def run(timeStamp):
         SendBuffer = {}
 
 if __name__ == '__main__':
+    ProPath   = sys.path[0]
+    Pidfile   = ProPath + os.sep + "client.pid"
+    ProStdin  = "/dev/null"
+    ProStdout = "/dev/null"
+    ProStderr = ProPath + os.sep+ "error.log"
     try:
         options = sys.argv[1]
     except IndexError:
         options = ''
     if options == '-d':
-        initlog(10,LogName)
+        initlog(10,ProPath,LogName)
     else:
-        daemonize()
-        initlog(20,LogName)
+        daemonize(Pidfile,ProStdin,ProStdout,ProStderr)
+        initlog(20,ProPath,LogName)
     SendBuffer={}
 
     while True:
@@ -229,6 +234,5 @@ if __name__ == '__main__':
         minutes,second = int(minutes),int(second)
         if minutes in interval(Interval):
             if second == 0:
-
                 run(timeStamp)
         time.sleep(1)

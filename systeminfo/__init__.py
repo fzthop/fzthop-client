@@ -11,6 +11,7 @@ __all__      = ['cpu','physicalMem','buffersMem','swapMem','partition','uptime',
 
 from systeminfo import top,free,net,df,io
 from ipaddress import ipaddress
+import sys
 
 def init():
     """
@@ -24,40 +25,70 @@ def init():
     io.__init__()
 
 def cpu():
-    return top.cpuLoad()
+    cpu = top.cpuLoad()
+    if cpu is None:
+        sys.stderr.writelines("Cpu info is None\n")
+    return cpu
 
 def physicalMem():
-    return free.physicalMem()
+    mem = free.physicalMem()
+    if mem is None:
+        sys.stderr.writelines("Physical mem info is None\n")
+    return mem
 
 def buffersMem():
-    return free.bufferslMem()
+    mem = free.bufferslMem()
+    if mem is None:
+        sys.stderr.writelines("Buffers mem info is None\n")
+    return mem
 
 def swapMem():
-    return free.swapMem()
+    mem = free.swapMem()
+    if mem is None:
+        sys.stderr.writelines("Swap mem info is None\n")
+    return mem
 
 def partition():
-    return df.detail()
+    partition =  df.detail()
+    if partition is None:
+        sys.stderr.writelines("Partition info is None\n")
+    return partition
 
 def uptime():
-    return top.uptime()
+    load =  top.uptime()
+    if load is None:
+        sys.stderr.writelines("Uptime info is None\n")
+    return load
 
 def process():
-    return top.processStatus()
+    process =  top.processStatus()
+    if process is None:
+        sys.stderr.writelines("Process info is None\n")
+    return process
 
 def netCard():
-    return net.detail()
+    netCard = net.detail()
+    if netCard is None:
+        sys.stderr.writelines("NetCard info is None\n")
+    return netCard
 
 def iostat():
-    return io.detail()
+    iostat = io.detail()
+    if iostat is None:
+        sys.stderr.writelines("Io info is None\n")
+    return iostat
 
 def maxInetipadd():
     result = []
-    cardInfo = net.detail()
-    for card in cardInfo.keys():
-        netInfo = cardInfo[card]
-        ip = netInfo['ipadd']
-        if ip is not None:
-            result.append(ip)
+    try:
+        cardInfo = net.detail()
+        for card in cardInfo.keys():
+            netInfo = cardInfo[card]
+            ip = netInfo['ipadd']
+            if ip is not None:
+                result.append(ip)
+    except Exception,error:
+        sys.stderr.writelines("To obtain net card ip address error,code:%s\n" %error)
     if result:
         return  ipaddress.maxInetip(result)
     else:
