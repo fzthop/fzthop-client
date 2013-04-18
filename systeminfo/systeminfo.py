@@ -14,10 +14,10 @@ class Top():
         topCmd = "/usr/bin/top -bi -n 3 -d 2"
         subp   = subprocess.Popen(topCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         topInfo= subp.stdout.read()
-        if subp.poll() == 0:
+        try:
             topInfo = topInfo.split("\n\n\n")[2]
             topInfo = topInfo.split("\n")
-        else:
+        except:
             topInfo = []
         self.topInfo = topInfo
 
@@ -102,9 +102,9 @@ class Free():
         freeCmd = "/usr/bin/free"
         subp   = subprocess.Popen(freeCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         freeInfo = subp.stdout.read()
-        if subp.poll() == 0:
+        try:
             freeInfo = freeInfo.split("\n")
-        else:
+        except:
             freeInfo = []
         self.freeInfo = freeInfo
 
@@ -192,9 +192,9 @@ class Netcard():
             netInfo = []
         subp   = subprocess.Popen(ifconfigCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         ifconfigInfo = subp.stdout.read()
-        if subp.poll() == 0:
+        try:
             ifconfigInfo = ifconfigInfo.split("\n\n")
-        else:
+        except:
              ifconfigInfo = []
         self.netInfo = netInfo
         self.ifconfigInfo = ifconfigInfo
@@ -253,17 +253,17 @@ class Df():
         subpNode   = subprocess.Popen(dfCmdnode, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         dfSizeinfo = subpSize.stdout.read()
         dfNodeinfo = subpNode.stdout.read()
-        if subpSize.poll() == 0:
+        try:
             dfSizeinfo = dfSizeinfo.replace('\n ','')
             dfSizeinfo = dfSizeinfo.replace('%','')
             dfSizeinfo = dfSizeinfo.split('\n')
-        else:
+        except:
             dfSizeinfo = []
-        if subpNode.poll() == 0:
+        try:
             dfNodeinfo = dfNodeinfo.replace('\n ','')
             dfNodeinfo = dfNodeinfo.replace('%','')
             dfNodeinfo = dfNodeinfo.split('\n')
-        else:
+        except:
             dfNodeinfo = []
         self.dfSizeinfo = dfSizeinfo
         self.dfNodeinfo = dfNodeinfo
@@ -309,9 +309,9 @@ class Iostat():
         iostatCmd = "/usr/bin/iostat -x"
         subp = subprocess.Popen(iostatCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         iostatInfo = subp.stdout.read()
-        if subp.poll() == 0:
+        try:
             iostatInfo = iostatInfo.split('\n')
-        else:
+        except:
             iostatInfo= []
         self.iostatInfo = iostatInfo
 

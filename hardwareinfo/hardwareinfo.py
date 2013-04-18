@@ -16,9 +16,9 @@ class Dmidecode():
         #if os.path.isfile(dmidecodeCmd):
         subp   = subprocess.Popen(dmidecodeCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         dmidecodeInfo= subp.stdout.read()
-        if subp.poll() == 0:
+        try:
             dmidecodeInfo = dmidecodeInfo.split("\n\n")
-        else:
+        except:
             dmidecodeInfo = []
         self.dmidecodeInfo = dmidecodeInfo
 
