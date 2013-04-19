@@ -4,7 +4,7 @@
 
 """
 from json import dumps,loads
-from platform import uname
+from platform import uname, dist
 import time
 import os,sys
 import socket
@@ -175,6 +175,7 @@ def run(timeStamp):
     hostid = systemInfo['uuid']
     maxIp = systeminfo.maxInetipadd()
     osVersion,osName,kernel = uname()[0:3]
+    kernel = "%s(%s)" %('-'.join(dist()),kernel)
     keys = ['hostid',          #主机ID，根据主板UUID生成
             'ipadd',            #最大的公网ip
             'osVersion',        #操作系统名称{linux,windows}
