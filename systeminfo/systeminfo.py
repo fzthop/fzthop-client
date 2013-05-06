@@ -3,378 +3,340 @@
 获取服务器运行状态
 """
 
-import subprocess
-import re
+from __future__  import  division
+import re,os,time,subprocess
+from time import sleep
+#import pyutmp  #display linux /var/run/utmp
 
-
-class Top():
+def rounds(digit=2,arg1=1,arg2=1,arg3=1):
     """
+    rewrite
     """
-    def __init__(self):
-        topCmd = "/usr/bin/top -bi -n 3 -d 2"
-        subp   = subprocess.Popen(topCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-        topInfo= subp.stdout.read()
-        try:
-            topInfo = topInfo.split("\n\n\n")[2]
-            topInfo = topInfo.split("\n")
-        except:
-            topInfo = []
-        self.topInfo = topInfo
+    try:
+        result = round((arg1/arg2/arg3),digit)
+    except ZeroDivisionError:
+        result = 0
+    return  result
 
-    def uptime(self):
-        topInfo = self.topInfo
-        try:
-            uptimeInfo = topInfo[0]
-        except IndexError:
-            uptimeInfo = ""
-        findAll = re.compile(r"""(\d+\s+)user             #登录用户数
-                               .*average:(.*),(.*),(.*)$  #load 1分钟，5分钟，15分钟负载
-                             """,re.X)
-        result = {}
-        project = ['user','load1','load5','load15']
-        try:
-            uptimeInfo = findAll.findall(uptimeInfo)[0]
-            uptimeInfo = [x.strip() for x in uptimeInfo]
-            result =  dict(zip(project,uptimeInfo))
-        except (ValueError,IndexError):
-            pass
-        if result:
-            return  result
-        else:
-            return None
 
-    def processStatus(self):
-        topInfo = self.topInfo
-        try:
-            processInfo = topInfo[1]
-        except IndexError:
-            processInfo = ""
-        findAll = re.compile(r"""(\d+\s+)total       #总运行的进程
-                               .*(\d+\s+)running     #正在运行的进程
-                               .*(\d+\s+)sleeping    #休眠的进程
-                               .*(\d+\s+)stopped     #停止的进程
-                               .*(\d+\s+)zombie      #僵尸进程
-                             """,re.X)
-        result = {}
-        project = ['total','running','sleeping','stopped','zombie']
-        try:
-            processInfo = findAll.findall(processInfo)[0]
-            processInfo = [x.strip() for x in processInfo]
-            result =  dict(zip(project,processInfo))
-        except (ValueError,IndexError):
-            pass
-        if result:
-            return  result
-        else:
-            return None
-    def cpuLoad(self):
-        topInfo = self.topInfo
-        try:
-            cpuInfo = topInfo[2]
-        except IndexError:
-            cpuInfo = ""
-        findAll = re.compile(r"""\s(\d.*)%us    #用户空间占用CPU
-                               .*\s(\d.*)%sy    #内核空间占用CPU
-                               .*\s(\d.*)%ni    #用户空间内改变过优先级的进程占用CPU百分比
-                               .*\s(\d.*)%id    #空闲CPU百分比
-                               .*\s(\d.*)%wa    #等待输入输出的CPU时间百分比
-                               .*\s(\d.*)%hi    #硬件中断
-                               .*\s(\d.*)%si    #软件中断
-                               .*\s(\d.*)%st    #实时
-                             """,re.X)
-        result = {}
-        project = ['us','sy','ni','idle','wa','hi','si','st']
-        try:
-            cpuInfo = findAll.findall(cpuInfo)[0]
-            cpuInfo = [x.strip() for x in cpuInfo]
-            result =  dict(zip(project,cpuInfo))
-        except (ValueError,IndexError):
-            pass
-        if result:
-            return  result
-        else:
-            return None
-class Free():
-    """
+def get_stat():
+    stat_file = open(r'/proc/stat','r')
+    try:
+        stat_info = stat_file.readline()
+    finally:
+        stat_file.close()
+    stat_info = stat_info.split()[1::]
+    stat_info = map(int, stat_info)
+    filling_num = 9 - len(stat_info)
+    if filling_num != 0:
+        for num in xrange(filling_num):
+            stat_info.append(0)
+    #print stat_info
+    return stat_info
 
-    """
-    def __init__(self):
-        freeCmd = "/usr/bin/free"
-        subp   = subprocess.Popen(freeCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-        freeInfo = subp.stdout.read()
-        try:
-            freeInfo = freeInfo.split("\n")
-        except:
-            freeInfo = []
-        self.freeInfo = freeInfo
-
-    def  physicalMem(self):
-        freeInfo = self.freeInfo
-        try:
-            phInfo = freeInfo[1]
-        except IndexError:
-            phInfo = ""
-        findAll = re.compile(r"""\s+(\d+)    #总物理内存
-                                  \s+(\d+)   #分配的内存
-                                  \s+(\d+)   #未分配的内存
-                                  \s+(\d+)   #多个进程共享的内存
-                                  \s+(\d+)   #磁盘缓存
-                                  \s+(\d+)   #系统已分配但未被使用的cache数量
-                             """,re.X)
-        result = {}
-        project = ['total','used','free','shard','buffers','cached']
-        try:
-            phInfo = findAll.findall(phInfo)[0]
-            phInfo = [x.strip() for x in phInfo]
-            result =  dict(zip(project,phInfo))
-        except (ValueError,IndexError):
-            pass
-        if result:
-            return  result
-        else:
-            return None
-    def  bufferslMem(self):
-            freeInfo = self.freeInfo
-            try:
-                buInfo = freeInfo[2]
-            except IndexError:
-                buInfo = ""
-            findAll = re.compile(r"""\s+(\d+)    #buffers 使用的内存
-                                  \s+(\d+)       #cache的内存
-                             """,re.X)
-            result = {}
-            project = ['buffers','cache']
-            try:
-                buInfo = findAll.findall(buInfo)[0]
-                buInfo = [x.strip() for x in buInfo]
-                result =  dict(zip(project,buInfo))
-            except (ValueError,IndexError):
-                pass
-            if result:
-                return  result
-            else:
-                return None
-    def  swapMem(self):
-        freeInfo = self.freeInfo
-        try:
-            swapInfo = freeInfo[3]
-        except IndexError:
-            swapInfo = ""
-        findAll = re.compile(r"""\s+(\d+)    #swap内存
-                                  \s+(\d+)   #swap使用内存
-                                  \s+(\d+)   #swap剩余内存
-                             """,re.X)
-        result = {}
-        project = ['total','used','free']
-        try:
-            swapInfo = findAll.findall(swapInfo)[0]
-            swapInfo = [x.strip() for x in swapInfo]
-            result =  dict(zip(project,swapInfo))
-        except (ValueError,IndexError):
-            pass
-        if result:
-            return  result
-        else:
-            return None
-
-class Netcard():
-    """
-
-    """
-    def __init__(self):
-        netFile = "/proc/net/dev"
-        ifconfigCmd = "/sbin/ifconfig"
-        try:
-            netInfo = open(netFile,'r').read()
-            netInfo = netInfo.replace(':',' ')
-            netInfo = netInfo.split('\n')
-        except IOError:
-            netInfo = []
-        subp   = subprocess.Popen(ifconfigCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-        ifconfigInfo = subp.stdout.read()
-        try:
-            ifconfigInfo = ifconfigInfo.split("\n\n")
-        except:
-             ifconfigInfo = []
-        self.netInfo = netInfo
-        self.ifconfigInfo = ifconfigInfo
-    def detail(self):
-        netInfo = self.netInfo
-        ifconfigInfo = self.ifconfigInfo
-        findAll = re.compile(r"""(\w+\d+)
-                                 .*addr:(\d+.\d+.\d+.\d+)
+def get_ifconfig():
+    ipadd = {}
+    ifconfigCmd = "/sbin/ifconfig"
+    subp   = subprocess.Popen(ifconfigCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    ifconfigInfo = subp.stdout.read()
+    try:
+        ifconfigInfo = ifconfigInfo.split("\n\n")
+    except:
+        ifconfigInfo = []
+    findAll = re.compile(r"""(\w+\d+)
+                              .*addr:(\d+.\d+.\d+.\d+)
                               """,re.I|re.X|re.S)
+    for ip in ifconfigInfo:
         try:
-            netInfo = netInfo[2::]
-        except IndexError:
-            netInfo = ""
-        result = {}
-        ipadd = {}
-        project = ['input','output','name','ipadd']
-        for ip in ifconfigInfo:
-            try:
-                ipname,ip =  findAll.findall(ip)[0]
-                ipadd.setdefault(ipname,[]).append(ip)
-            except (ValueError,IndexError):
-                pass
-        for net in netInfo:
-            net =  re.split('\s+',net.strip())
-            if len(net) == 17:
-                cardName,receiveBytes = net[0],net[1]
-                transmitBytes = net[9]
-                try:
-                    ip = ipadd[cardName]
-                    if len(str(ip)) > 15:
-                        ip = ','.join(ip)
-                except KeyError:
-                    ip = None
-                traffic = dict(zip(project,
-                                (receiveBytes,transmitBytes,cardName,ip)
-                                )
-                             )
-                try:
-                    if result[cardName]:
-                        pass
-                except KeyError:
-                    result[cardName] = traffic
-        if result:
-            return  result
-        else:
-            return None
+            ipname,ip =  findAll.findall(ip)[0]
+            ipadd.setdefault(ipname,[]).append(ip)
+        except (ValueError,IndexError):
+            pass
+    return ipadd
 
-class Df():
+def get_iostat():
     """
 
     """
-    def __init__(self):
-        dfCmdsize = "/bin/df"
-        dfCmdnode = "/bin/df -i"
-        subpSize   = subprocess.Popen(dfCmdsize, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-        subpNode   = subprocess.Popen(dfCmdnode, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-        dfSizeinfo = subpSize.stdout.read()
-        dfNodeinfo = subpNode.stdout.read()
-        try:
-            dfSizeinfo = dfSizeinfo.replace('\n ','')
-            dfSizeinfo = dfSizeinfo.replace('%','')
-            dfSizeinfo = dfSizeinfo.split('\n')
-        except:
-            dfSizeinfo = []
-        try:
-            dfNodeinfo = dfNodeinfo.replace('\n ','')
-            dfNodeinfo = dfNodeinfo.replace('%','')
-            dfNodeinfo = dfNodeinfo.split('\n')
-        except:
-            dfNodeinfo = []
-        self.dfSizeinfo = dfSizeinfo
-        self.dfNodeinfo = dfNodeinfo
+    result = {}
+    disk_file = open(r'/proc/diskstats','r')
+    part_file = open(r'/proc/partitions','r')
+    try:
+        disk_info = disk_file.readlines()
+        part_info = part_file.readlines()
+    finally:
+        disk_file.close()
+        part_file.close()
+    part_info = [ dev.strip().split()[3]  for dev in part_info if len(dev) > 1 ]
+    for line in disk_info:
+        if len(line) < 1:
+            continue
+        line = line.strip().split()
+        dev  = line[2]
+        if dev in part_info:
+            result[dev] = line[3::]
+    return result
 
-    def detail(self):
-        dfSizeinfo = self.dfSizeinfo
-        dfNodeinfo = self.dfNodeinfo
-        try:
-            dfSizeinfo = dfSizeinfo[1::]
-            dfNodeinfo = dfNodeinfo[1::]
-        except IndexError:
-            dfSizeinfo = ""
-            dfNodeinfo = ""
-        project = ['filesystem','size','used','availused',
-                       'sizeuse','mountedon','nodeuse']
-        result = {}
-        for size in dfSizeinfo:
-            size = re.split("\s+",size)
-            key  = size[-1]
-            nodeUse = None
-            for node in dfNodeinfo:
-                if node.find(key) > 0:
-                    node =  re.split("\s+",node)
-                    nodeUse = node[-2]
-            size.append(nodeUse)
-            info = dict(zip(project,size))
-            try:
-                if result[key]:
-                    pass
-            except KeyError:
-                if key:
-                    result[key] = info
-        if result:
-            return result
-        else:
-            return None
+def uptime():
+    """
+    /proc/loadavg
+    0.01 0.00 0.00 1/92 32626
+        lavg_1 (4.61) 1-分钟平均负载
+        lavg_5 (4.36) 5-分钟平均负载
+        lavg_15(4.15) 15-分钟平均负载
+        nr_running (9) 在采样时刻，运行队列的任务的数目，与/proc/stat的procs_running表示相同意思
+        nr_threads (84) 在采样时刻，系统中活跃的任务的个数（不包括运行已经结束的任务）
+        last_pid(5662) 最大的pid值，包括轻量级进程，即线程。
+    /proc/uptime
+    543133.05 542932.50
+        第一个参数是代表从系统启动到现在的时间(以秒为单位)
+        第二个参数是代表系统空闲的时间(以秒为单位)：
+    """
+    project = ('uptime','freetime','load1','load5','load15','user')
+    load_file = open(r'/proc/loadavg','r')
+    uptime_file = open(r'/proc/uptime','r')
+    try:
+        uptime_info = uptime_file.read()
+        load_info = load_file.read()
+    finally:
+        uptime_file.close()
+        load_file.close()
+    usetime,freetime   = [int(float(i)) for i in uptime_info.split()]
+    load1,load5,load15 = load_info.split()[0:3]
+    data = (usetime,freetime,load1,load5,load15,0)
+    result = dict(zip(project,data))
+    return result
 
-class Iostat():
+def process():
+    """
+    R   running
+    S   sleeping
+    D   sleeping
+    T   stop
+    Z   zombie
+    """
+    project = ('total','running','sleeping','stopped','zombie')
+    running = sleeping = stopped = zombie = 0
+    file_list = os.listdir(r'/proc')
+    pids = [i for i in file_list if re.findall(r'\d+',i)]
+    total= len(pids)
+    for pid in pids:
+        status_file = '/proc/' + pid + '/status'
+        status_file = open(status_file,'r')
+        try:
+            status_info = status_file.read()
+        finally:
+            status_file.close()
+        status = re.findall(r'State:\s+(\w)',status_info)[0]
+        if   status == 'R':
+            running += 1
+        elif status == 'S' or status == 'D':
+            sleeping += 1
+        elif status == 'T':
+            stopped += 1
+        elif status == 'Z':
+            zombie += 1
+    data = (total,running,sleeping,stopped,zombie)
+    result = dict(zip(project,data))
+    return result
+
+def cpuLoad():
+    """
+    /proc/stat
+             1          2       3       4           5       6       7     8 9
+        cpu  144434599 11174 21046488 5688826509 24655741 658208 10475763 0 0
+        cpu0 15429098 673 1426044 717835857 1511705 0 60234 0 0
+        cpu1 17987848 2205 2587285 712141480 2784616 50045 710094 0 0
+        ......
+        1jiffies=0.01秒
+        us --> user    用户态的CPU时间（单位：jiffies） ，不包含 nice值为负进程。
+        ni --> nice    nice值为负的进程所占用的CPU时间（单位：jiffies）
+        sy --> system  核心时间（单位：jiffies）
+        id --> idle    除硬盘IO等待时间以外其它等待时间（单位：jiffies）
+        wa --> iowait  硬盘IO等待时间（单位：jiffies） ，
+        hi --> irq     硬中断时间（单位：jiffies）
+        si --> softirq 软中断时间（单位：jiffies）
+        st --> stealstolen
+        guest          2.6.24以下内核版本没有这项数值
+    """
+    project = ['us','sy','ni','idle','wa','hi','si','st','gu']
+    cpuinfo1 = get_stat()
+    time.sleep(0.1)
+    cpuinfo2 = get_stat()
+    cpuinfo  = [ t2 - t1 for t1,t2 in zip(cpuinfo1,cpuinfo2)]
+    total_time = sum(cpuinfo)
+    cpuinfo = [ "%3.1f" %(num / total_time * 100) for num in cpuinfo]
+    cpuinfo = dict(zip(project,cpuinfo))
+    return cpuinfo
+
+def mem():
     """
 
     """
-    def __init__(self):
-        iostatCmd = "/usr/bin/iostat -x"
-        subp = subprocess.Popen(iostatCmd, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-        iostatInfo = subp.stdout.read()
-        try:
-            iostatInfo = iostatInfo.split('\n')
-        except:
-            iostatInfo= []
-        self.iostatInfo = iostatInfo
+    project = ['physical_total','physical_used','physical_free', 'physical_shard','physical_buffers','physical_cached',
+                'buffers_used','buffers_cache',
+                'swap_total','swap_used','swap_free']
+    dicTmp = {}
+    mem_file = open(r'/proc/meminfo','r')
+    try:
+        meminfo = mem_file.readlines()
+    finally:
+        mem_file.close()
+    for line in meminfo:
+        line = line.replace(':','').strip()
+        line = re.split('\s+',line)
+        if len(line) != 3:
+            continue
+        name,size,unit = line
+        dicTmp[name] = int(size) * 1024
+    buffer_free = dicTmp['MemFree'] + dicTmp['Buffers'] + dicTmp['Cached']
+    buffer_used = dicTmp['MemTotal'] - buffer_free
+    info = [dicTmp['MemTotal'],
+            dicTmp['MemTotal'] - dicTmp['MemFree'],
+            dicTmp['MemFree'],
+            0,
+            dicTmp['Buffers'],
+            dicTmp['Cached'],
+            buffer_used,
+            buffer_free,
+            dicTmp['SwapTotal'],
+            dicTmp['SwapTotal'] - dicTmp['SwapFree'],
+            dicTmp['SwapFree']
+            ]
+    result = dict(zip(project,info))
+    return  result
 
-    def detail(self):
-        """
+def net():
+    """
+
+    """
+    project = ['input','output','name','ipadd']
+    net_file = open('/proc/net/dev','r')
+    try:
+        netInfo = net_file.readlines()
+    finally:
+        net_file.close()
+    netInfo = netInfo[2::]
+    result = {}
+    ipadd = get_ifconfig()
+    for net in netInfo:
+        net = net.replace(':',' ')
+        net =  re.split('\s+',net.strip())
+        if len(net) != 17:
+            continue
+        cardName,receiveBytes = net[0],net[1]
+        transmitBytes = net[9]
+        try:
+            ip = ipadd[cardName]
+            ip = ','.join(ip)
+        except KeyError:
+            ip = None
+        info = (receiveBytes,transmitBytes,cardName,ip)
+        traffic = dict(zip(project,info))
+        result[cardName] = traffic
+    return result
+
+def disk():
+    """
+
+    """
+    project = ['filesystem','mountedon','size','used','availused','sizeuse','nodeuse']
+    result = {}
+    filesys = []
+    with open("/proc/filesystems") as f:
+        for line in f.readlines():
+            if not line.startswith("nodev"):
+                filesys.append(line.strip())
+    retlist = []
+    with open("/proc/mounts") as f:
+        for line in f.readlines():
+            if line.startswith('none'):continue
+            fields = line.split()
+            mountpoint = fields[1]
+            fstype = fields[2]
+            if fstype not in filesys:continue
+            retlist.append(mountpoint)
+    for path in retlist:
+        st    = os.statvfs(path)
+        size  = (st.f_blocks * st.f_frsize) / 1024
+        avail = (st.f_bavail * st.f_frsize) / 1024
+        used  = ((st.f_blocks - st.f_bfree) * st.f_frsize) / 1024
+        percent = int(used * 100 / size)
+        iused   = int((st.f_files - st.f_ffree) * 100 / st.f_files)
+        info    = (0,path,size,used,avail,percent,iused)
+        result[path] = dict(zip(project,info))
+    return result
+
+def iostat(interval=1):
+    """
+    iostat:
         0        1          2       3     4        5       6        7          8        9       10      11
         Device:  rrqm/s   wrqm/s   r/s   w/s     rsec/s   wsec/s    avgrq-sz avgqu-sz   await  svctm  %util
         sda      0.03     621.37  0.13  10.79    10.58    5057.28   463.95     0.53     48.36   2.99   3.27
-        """
-        iostatInfo = self.iostatInfo
-        try:
-            iostatInfo = iostatInfo[6::]
-        except IndexError:
-            iostatInfo = ''
-        project = ['await','rsec','wsec','util','device']
-        result ={}
-        for info in iostatInfo:
-            info = re.split('\s+',info)
-            if len(info) != 12:
-                continue
-            key,rsec,wsec,await,util = info[0],info[5],info[6],info[9],info[11]
-            info = dict(zip(project,(await,rsec,wsec,util,key)))
-            try:
-                if result[key]:
-                    pass
-            except KeyError:
-                result[key] = info
-        if result:
-            return result
-        else:
-            return None
+        rrqm/s:         每秒进行 merge 的读操作数目。即 delta(rmerge)/s
+        wrqm/s:         每秒进行 merge 的写操作数目。即 delta(wmerge)/s
+        r/s:            每秒完成的读 I/O 设备次数。即 delta(rio)/s
+        w/s:            每秒完成的写 I/O 设备次数。即 delta(wio)/s
+        rsec/s:         每秒读扇区数。即 delta(rsect)/s
+        wsec/s:         每秒写扇区数。即 delta(wsect)/s
+        rkB/s:          每秒读K字节数。是 rsect/s 的一半，因为每扇区大小为512字节。
+        wkB/s:          每秒写K字节数。是 wsect/s 的一半。
+        avgrq-sz:       平均每次设备I/O操作的数据大小 (扇区)。即 delta(rsect+wsect)/delta(rio+wio)
+        avgqu-sz:       平均I/O队列长度。即 delta(aveq)/s/1000 (因为aveq的单位为毫秒)。
+        await:          平均每次设备I/O操作的等待时间 (毫秒)。即 delta(ruse+wuse)/delta(rio+wio)
+        svctm:          平均每次设备I/O操作的服务时间 (毫秒)。即 delta(use)/delta(rio+wio)
+        %util:          一秒中有百分之多少的时间用于 I/O 操作，或者说一秒中有多少时间 I/O 队列是非空的。
+        即 delta(use)/s/1000 (因为use的单位为毫秒)
 
-top = Top()
-free = Free()
-net = Netcard()
-df = Df()
-io = Iostat()
+    /proc/diskstat
+        0  1   2    3       4      5      6     7     8       9         10     11
+        0 sda 16140 67741 1740112 1453724 16858 18744 1043336 390704 0 173612 1844580
+            1、major     主设备号
+            2、minor     磁盘次设备号
+            3、name      磁盘的设备名
+            4、rio       读请求总数
+            5、rmerge    合并的读请求总数
+            6、rsect     读扇区总数
+            7、ruse      读数据花费的时间，单位ms
+            8、wio       写请求总数
+            9、wmerge    合并的写请求总数
+            10、wsect    写扇区总数
+            11、wuse     写数据花费的时间
+            12、snow     现在正在进行的IO数等于IO队列中请求数
+            13、sset     系统真正花费在IO上的时间，减去重复等待时间
+            14、suse     系统花费在IO上花费的时间。
+    """
+    project = ['await','rsec','wsec','util','device']
+    result = {}
+    ioinfo_old = get_iostat()   #dict{'name':'3::'}
+    sleep(interval)
+    ioinfo_new = get_iostat()
+    for dev in ioinfo_old.keys():
+        io_old,io_new = ioinfo_old[dev],ioinfo_new[dev]
+        io = [ int(io2) - int(io1) for io1,io2 in zip(io_old,io_new) ]
+        #print io
+        rio,rmerge,rsect,ruse,wio,wmerge,wsect,wuse,snow,sset,suse = io
+        await = rounds(2 ,(ruse+wuse) ,(rio+wio) ,interval)
+        rsec  = rounds(2 ,(rsect * 512) ,interval)
+        wsec  = rounds(2 ,(wsect * 512) ,interval)
+        util  = rounds(2 ,suse ,interval ,1000)
+        info = dict(zip(project ,(await,rsec,wsec,util,dev)))
+        result[dev] = info
+    return result
 
 def main():
     """
     单元测试
     """
-    mark1 = "=/" * 20
-    mark2 = "~*" * 20
-    project = ['uptime','process','CpuLoad','PhysicalMem','BuffersMem','SwapMem',
-               'Network','DiskInfo','IoInfo']
-    p2 = ['Network','DiskInfo','IoInfo']
-    info =  [top.uptime(),top.processStatus(),top.cpuLoad(),free.physicalMem(),free.bufferslMem(),
-             free.swapMem(),net.detail(),df.detail(),io.detail()]
+    mark = "~*" * 20
+    project = ['uptime','process','cpu','mem','net','disk','io']
+    info = [uptime(),process(),cpuLoad(),mem(),net(),disk(),iostat()]
     for num,pro in enumerate(project):
-        print "%s%s%s" %(mark1,pro,mark1)
-        dictInfo = info[num]
-        if dictInfo is not None:
-            for key in dictInfo.keys():
-                if pro in p2:
-                    print mark2
-                    dictInfo2 = dictInfo[key]
-                    for key2 in dictInfo2.keys():
-                        print "\t%s:%s" %(key2,dictInfo2[key2])
-                else:
-                    print "%s:%s" %(key,dictInfo[key])
-        else:
-            print "obtain error"
+        print "%s%s%s" %(mark,pro,mark)
+        unit = info[num]
+        for key in unit.keys():
+            print "%s:%s" %(key,unit[key])
 
 if __name__ == '__main__':
+    print "start unit test"
     main()

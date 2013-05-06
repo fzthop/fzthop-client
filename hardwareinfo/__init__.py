@@ -9,7 +9,7 @@ __all__     = [ 'totalInfo','blosInfo','systemInfo','cacheInfo',
                 'cpuInfo','memoryInfo','netCardinfo','newInfo']
 
 from hardwareinfo import dmidecode,kudzu,partedinfo
-import os
+import os,md5
 
 def init():
     """
@@ -47,18 +47,22 @@ def totalInfo():
     totalInfo = dict(zip(project,info))
     return totalInfo
 
-def newInfo(path='/tmp',cachename='hardware.info'):
-    if not os.path.exists(path):
-        os.makedirs(path,0755)
+def hardwareMd5():
+#def newInfo(path='/tmp',cachename='hardware.info'):
+#    if not os.path.exists(path):
+#        os.makedirs(path,0755)
+#    filename  = path + os.sep + cachename
+#    try:
+#        cache = open(filename, 'r' ).read()
+#    except IOError:
+#        cache = ""
     info = totalInfo()
-    filename  = path + os.sep + cachename
-    try:
-        cache = open(filename, 'r' ).read()
-    except IOError:
-        cache = ""
-    if str(info) != str(cache):
-        fileHandle = open(filename,'w+')
-        fileHandle.write(str(info))
-        return info
-    else:
-        return None
+    newmd5 = md5.new(str(info)).hexdigest()
+#    if str(info) != str(cache):
+#        fileHandle = open(filename,'w+')
+#        fileHandle.write(str(info))
+#    if oldmd5 == newmd5:
+#        return None
+#    else:
+#        return info
+    return newmd5

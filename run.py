@@ -5,11 +5,8 @@
 """
 from json import dumps,loads
 from platform import uname, dist
-import time
-import os,sys
-import socket
-import logging
-import logging.handlers
+from uuid import uuid1
+import time,os,sys,socket,logging,logging.handlers,md5
 import hardwareinfo
 import systeminfo
 
@@ -20,7 +17,7 @@ Interval = 5
 LogName  = 'client.log'
 #[socket configure]
 Server = '127.0.0.1'
-Port   = 1088
+Port   = 2000
 PassWord="abc"
 
 
@@ -168,14 +165,30 @@ def run(timeStamp):
     主程序
     """
     global  SendBuffer
-    #重新初始化硬件和运行信息
+    global  RunMd5
+    #重新初始化硬件运行信息
     hardwareinfo.init()
-    systeminfo.init()
+    #组装hostid
     systemInfo = hardwareinfo.systemInfo()
-    hostid = systemInfo['uuid']
+    uuid = systemInfo['uuid']
+    mac = uuid1().hex[-12:]
+    hostid = "%s-%s" %(uuid,mac)
+    hostid = md5.new(hostid).hexdigest()
+    #获取服务器最大IP，内核等信息
     maxIp = systeminfo.maxInetipadd()
     osVersion,osName,kernel = uname()[0:3]
     kernel = "%s(%s)" %('-'.join(dist()),kernel)
+    #获取硬件信息
+    hdmd5 = hardwareinfo.hardwareMd5()
+    if RunMd5 == hdmd5:
+        hdinfo = None
+    else:
+        hdinfo = hardwareinfo.totalInfo()
+        hdinfo['hdmd5'] = hdmd5
+    RunMd5 = hdmd5
+    #获取系统运行信息
+    sysinfo = systeminfo.total()
+    #组装发送字典
     keys = ['hostid',          #主机ID，根据主板UUID生成
             'ipadd',            #最大的公网ip
             'osVersion',        #操作系统名称{linux,windows}
@@ -192,8 +205,8 @@ def run(timeStamp):
               osName,
               kernel,
               PassWord,
-              hardwareinfo.newInfo(),
-              systeminfo.total(),
+              hdinfo,
+              sysinfo,
               timeStamp
             ]
     info = dict(zip(keys,values))
@@ -226,6 +239,7 @@ if __name__ == '__main__':
         daemonize(Pidfile,ProStdin,ProStdout,ProStderr)
         initlog(20,ProPath,LogName)
     SendBuffer={}
+    RunMd5 = "old"
 
     while True:
         timeStamp = int(time.time())
