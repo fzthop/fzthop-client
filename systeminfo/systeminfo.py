@@ -122,7 +122,10 @@ def process():
     total= len(pids)
     for pid in pids:
         status_file = '/proc/' + pid + '/status'
-        status_file = open(status_file,'r')
+        try:
+            status_file = open(status_file,'r')
+        except IOError:
+            break
         try:
             status_info = status_file.read()
         finally:
