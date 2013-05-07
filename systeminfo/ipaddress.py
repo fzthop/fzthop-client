@@ -2,14 +2,41 @@
 """
 计算最大的公网IP
 """
-import socket
-import struct
+#import socket
+#import struct
 
+
+#def ipDecimal(ip):
+#    return socket.ntohl(struct.unpack("I",socket.inet_aton(ip))[0])
+#def ipString(ip):
+#    return  socket.inet_ntoa(struct.pack('I',socket.htonl(ip)))
 
 def ipDecimal(ip):
-    return socket.ntohl(struct.unpack("I",socket.inet_aton(ip))[0])
-def ipString(ip):
-    return  socket.inet_ntoa(struct.pack('I',socket.htonl(ip)))
+    result = ''
+    ip_section = ip.split('.')
+    for num in ip_section:
+        num = int(num)
+        bnum = str(bin(num)[2::])
+        offset = 8 - len(bnum)
+        bnum = (str(0) * offset) + bnum
+        result += bnum
+    result = int(result,2)
+    return result
+
+def ipString(intip):
+    result = ''
+    ip = str(bin(intip)[2::])
+    offset = 32 - len(ip)
+    ip = (str(0) * offset) + ip
+    num = 0
+    for x in range(4):
+        ip_section = ip[num:num+8]
+        num += 8
+        section = int(ip_section,2)
+        section =  str(section) + '.'
+        result += section
+    result = result.strip('.')
+    return result
 
 class Ipaddress():
     """
@@ -58,8 +85,8 @@ def test():
     """
     单元测试
     """
-    data1 = ['172.16.0.1,183.88.20.2','192.168.0.5','221.202.33.44']
-    data2 = ['192.168.0.1,192.168.10.80','172.16.30.33']
+    data1 = ['172.16.0.1,243.88.20.2','192.168.0.5','221.202.33.44']
+    data2 = ['192.168.0.1,192.168.10.86','172.16.30.33']
     print "Max ip address:%s" %ipaddress.maxInetip(data1)
     print "Max ip address:%s" %ipaddress.maxInetip(data2)
 if __name__ == "__main__":
